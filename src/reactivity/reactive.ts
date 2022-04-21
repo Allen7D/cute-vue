@@ -1,32 +1,14 @@
-import { track, trigger } from "./effect";
+import { mutableHandlers, readonlyHandlers } from "./baseHandlers";
 
 // 返回对象的响应式副本
 export function reactive(obj) {
-  return new Proxy(obj, {
-    get(target, key) {
-      const res = Reflect.get(target, key);
-      // 依赖收集
-      track(target, key);
-      return res;
-    },
-
-    set(target, key, value) {
-      const res = Reflect.set(target, key, value);
-      // 依赖触发
-      trigger(target, key);
-      return res;
-    },
-  });
+  return createReactiveObject(obj, mutableHandlers);
 }
 
 export function readonly(obj) {
-  return new Proxy(obj, {
-    get(target, key) {
-      const res = Reflect.get(target, key);
-      return res;
-    },
-    set(target, key, value) {
-      return true;
-    },
-  });
+  return createReactiveObject(obj, readonlyHandlers);
+}
+
+function createReactiveObject(target, baseHandlers) {
+  return new Proxy(target, baseHandlers);
 }

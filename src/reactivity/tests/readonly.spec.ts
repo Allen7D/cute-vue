@@ -8,4 +8,14 @@ describe("readonly", () => {
     expect(wrappedData).not.toBe(originalData);
     expect(wrappedData.foo).toBe(1);
   });
+
+  it("warn then call set", () => {
+    console.warn = jest.fn();
+
+    const user = readonly({
+      age: 10,
+    });
+    user.age = 11; // 修改readonly的对象
+    expect(console.warn).toBeCalled(); // 调用console.warn的地方，有没有被执行到
+  });
 });
