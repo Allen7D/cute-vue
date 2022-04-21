@@ -1,4 +1,4 @@
-import { readonly } from "../reactive";
+import { readonly, isReadonly } from "../reactive";
 
 describe("readonly", () => {
   it("test readonly", () => {
@@ -7,6 +7,8 @@ describe("readonly", () => {
     const wrappedData = readonly(originalData);
     expect(wrappedData).not.toBe(originalData);
     expect(wrappedData.foo).toBe(1);
+    expect(isReadonly(wrappedData)).toBe(true);
+    expect(isReadonly(originalData)).toBe(false);
   });
 
   it("warn then call set", () => {

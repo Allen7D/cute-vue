@@ -1,5 +1,10 @@
 import { mutableHandlers, readonlyHandlers } from "./baseHandlers";
 
+export const enum ReactiveFlags {
+  IS_REACTIVE = "__v_isReactive",
+  IS_READONLY = "__v_isReadonly",
+}
+
 // 返回对象的响应式副本
 export function reactive(obj) {
   return createReactiveObject(obj, mutableHandlers);
@@ -7,6 +12,14 @@ export function reactive(obj) {
 
 export function readonly(obj) {
   return createReactiveObject(obj, readonlyHandlers);
+}
+
+export function isReactive(value) {
+  return !!value[ReactiveFlags.IS_REACTIVE];
+}
+
+export function isReadonly(value) {
+  return !!value[ReactiveFlags.IS_READONLY];
 }
 
 function createReactiveObject(target, baseHandlers) {
