@@ -1,7 +1,7 @@
 class ReactiveEffect {
   private _fn: any;
 
-  constructor(fn) {
+  constructor(fn, public scheduler?) {
     this._fn = fn;
   }
 
@@ -36,13 +36,17 @@ export function trigger(target, key) {
   let dep = depsMap.get(key);
 
   for (let effect of dep) {
-    effect.run();
+    if (effect.scheduler) {
+      effect.scheduler();
+    } else {
+      effect.run(); // 区别跟effect中的_effect.run()触发的时机
+    }
   }
 }
 
 let activeEffect; // 用于全局的闭包
-export function effect(fn) {
-  const _effect = new ReactiveEffect(fn);
+export function effect(fn, options: any = {}) {
+  const _effect = new ReactiveEffect(fn, options.scheduler);
   // 1、将activeEffect提升为全局变量
   // 2、执行effct内的fn
   // 3、触发effct内部'对象的响应式副本'的依赖收集
