@@ -7,7 +7,7 @@ class ReactiveEffect {
 
   run() {
     activeEffect = this;
-    this._fn();
+    return this._fn();
   }
 }
 
@@ -47,4 +47,6 @@ export function effect(fn) {
   // 2、执行effct内的fn
   // 3、触发effct内部'对象的响应式副本'的依赖收集
   _effect.run();
+
+  return _effect.run.bind(_effect); // 以当前effect的实例作为this的指向
 }
