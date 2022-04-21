@@ -18,3 +18,15 @@ export function reactive(obj) {
     },
   });
 }
+
+export function readonly(obj) {
+  return new Proxy(obj, {
+    get(target, key) {
+      const res = Reflect.get(target, key);
+      return res;
+    },
+    set(target, key, value) {
+      return true;
+    },
+  });
+}
