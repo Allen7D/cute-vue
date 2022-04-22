@@ -3,12 +3,14 @@ import { readonly, isReadonly } from "../reactive";
 describe("readonly", () => {
   it("test readonly", () => {
     // readonly不能被改写，不能set（不会触发依赖），也不必收集依赖
-    const originalData = { foo: 1, bar: { baz: 2 } };
-    const wrappedData = readonly(originalData);
-    expect(wrappedData).not.toBe(originalData);
-    expect(wrappedData.foo).toBe(1);
-    expect(isReadonly(wrappedData)).toBe(true);
-    expect(isReadonly(originalData)).toBe(false);
+    const original = { foo: 1, bar: { baz: 2 } };
+    const wrapped = readonly(original);
+    expect(wrapped).not.toBe(original);
+    expect(wrapped.foo).toBe(1);
+    expect(isReadonly(wrapped)).toBe(true);
+    expect(isReadonly(original)).toBe(false);
+    expect(isReadonly(wrapped.bar)).toBe(true);
+    expect(isReadonly(original.bar)).toBe(false);
   });
 
   it("warn then call set", () => {
