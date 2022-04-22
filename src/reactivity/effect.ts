@@ -70,11 +70,15 @@ export function track(target, key) {
 
   if (dep.has(activeEffect)) return; // 避免尝试执行重复依赖的收集
 
+  trackEffects(dep);
+}
+
+export function trackEffects(dep) {
   dep.add(activeEffect);
   activeEffect.deps.push(dep);
 }
 
-function isTracking() {
+export function isTracking() {
   // activeEffect可能为空，例如：在没有effct，先执行if判断 x.y === 1
   return shouldTrack && activeEffect !== undefined;
 }
@@ -84,6 +88,10 @@ export function trigger(target, key) {
   let depsMap = targetMap.get(target);
   let dep = depsMap.get(key);
 
+  triggerEffects(dep);
+}
+
+export function triggerEffects(dep) {
   for (let effect of dep) {
     if (effect.scheduler) {
       effect.scheduler();
