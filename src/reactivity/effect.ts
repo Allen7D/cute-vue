@@ -1,5 +1,8 @@
 import { extend } from "../shared";
 
+let activeEffect;
+let shouldTrack; // 是否可以收集依赖
+
 class ReactiveEffect {
   private _fn: any;
   public deps = [];
@@ -11,8 +14,17 @@ class ReactiveEffect {
   }
 
   run() {
-    activeEffect = this;
-    return this._fn();
+    if (!this.active) {
+      return this._fn();
+    }
+
+    // 核心：依赖收集的时机（非effect内的表达式执行时，不再触发依赖收集）
+    // 通过shouldTrack 来做收集依赖的区分
+    shouldTrack = true; // shouldTrack必须保持即使开与关（effct内部fn执行完毕，就关闭），避免track任意收集依赖
+    activeEffect = this; // 在真正的fn执行之前，让依赖收集确定为当前activeEffect
+    const result = this._fn();
+    shouldTrack = false;
+    return result;
   }
 
   // 该方法的核心：梳理清楚dep与effct之间的关系
@@ -34,12 +46,15 @@ class ReactiveEffect {
     effect.deps.forEach((dep: any) => {
       dep.delete(effect);
     });
+    effect.deps.length = 0; // 从依赖中移除相应的effect时，也要把effect反向的deps清空
   }
 }
 
 const targetMap = new Map();
 // 依赖收集
 export function track(target, key) {
+  if (!isTracking()) return;
+
   // target -> key -> dep
   let depsMap = targetMap.get(target);
   if (!depsMap) {
@@ -53,12 +68,15 @@ export function track(target, key) {
     depsMap.set(key, dep);
   }
 
-  // activeEffect可能为空，例如：在没有effct，先执行if判断 x.y === 1
-  if (!activeEffect) return;
+  if (dep.has(activeEffect)) return; // 避免尝试执行重复依赖的收集
+
   dep.add(activeEffect);
   activeEffect.deps.push(dep);
+}
 
-  activeEffect;
+function isTracking() {
+  // activeEffect可能为空，例如：在没有effct，先执行if判断 x.y === 1
+  return shouldTrack && activeEffect !== undefined;
 }
 
 // 依赖触发
@@ -75,7 +93,6 @@ export function trigger(target, key) {
   }
 }
 
-let activeEffect; // 用于全局的闭包
 export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
   // 1、将activeEffect提升为全局变量
@@ -85,7 +102,7 @@ export function effect(fn, options: any = {}) {
   extend(_effect, options);
 
   const runner: any = _effect.run.bind(_effect); // 以当前effect的实例作为this的指向
-  runner.effect = _effect; // 建立runner与effect之间的关系
+  runner.effect = _effect; // 建立runner与effect之间的关系（例如: 可以在stop中被使用）
 
   return runner;
 }

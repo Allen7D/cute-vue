@@ -71,11 +71,13 @@ describe("effect", () => {
     stop(runner); // 移除响应式对象中的对应的依赖，不再被触发
     obj.props = 3;
     expect(dummy).toBe(2); // 不再触发对应的依赖，所以结果不变
+    obj.props++; // obj.props = obj.props + 1
+    expect(dummy).toBe(2); // 不再触发对应的依赖，所以结果不变
 
-    runner(); // 再次执行runner，且再次触发依赖收集（类似于撤销了stop的效果）
-    expect(dummy).toBe(3);
+    runner(); // 再次执行runner，但此时也无法再收集依赖（activeEffect）
+    expect(dummy).toBe(4);
 
-    obj.props = 4; // 触发了effct的fn
+    obj.props = 5; // 无法触发effct的fn
     expect(dummy).toBe(4);
   });
 
