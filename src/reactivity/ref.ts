@@ -6,6 +6,7 @@ class RefImpl {
   private _value: any; // _value可能会是响应式对象，进行Object.is比较麻烦
   private _rawValue: any;
   public dep;
+  public __v_isRef = true;
 
   constructor(value) {
     this._rawValue = value;
@@ -39,4 +40,12 @@ function trackRefValue(ref) {
 
 export function ref(value) {
   return new RefImpl(value);
+}
+
+export function isRef(ref) {
+  return !!ref.__v_isRef;
+}
+
+export function unRef(ref) {
+  return isRef(ref) ? ref.value : ref;
 }
