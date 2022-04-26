@@ -1,7 +1,6 @@
-import { createApp, reactive } from "../../lib/cute-vue.esm.js";
+import { createApp } from "../../lib/cute-vue.esm.js";
 
-const project = reactive({
-  title: "Cute Vue",
-});
+import { App } from "./App.js";
 
-createApp(`<h1>${project.title}</h1>`).mount(document.querySelector("#app"));
+const rootContainer = document.querySelector("#app");
+createApp(App).mount(rootContainer);
