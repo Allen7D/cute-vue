@@ -1,7 +1,10 @@
 // it('init', () => {
 //     expect(true).toBe(true);
 // });
-import { add } from "../index";
+
+function add(a, b) {
+  return a + b;
+}
 
 it("init", () => {
   expect(add(1, 1)).toBe(2);
