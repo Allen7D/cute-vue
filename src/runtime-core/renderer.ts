@@ -1,6 +1,5 @@
 import { createComponentInstance, setupComponent } from "./component";
-
-import { isObject } from "../shared";
+import { ShapeFlags } from "../shared/ShapeFlags";
 
 export function render(vnode, container) {
   // patch 中会进行递归处理
@@ -9,9 +8,10 @@ export function render(vnode, container) {
 
 // patch(打补丁)，分为挂载和更新，也包括区分 Component 的处理和 Element 的处理。
 function patch(vnode, container) {
-  if (typeof vnode.type === "string") {
+  const { shapeFlag } = vnode;
+  if (shapeFlag & ShapeFlags.ELEMENT) {
     processElement(vnode, container);
-  } else if (isObject(vnode.type)) {
+  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
     processComponent(vnode, container);
   }
 }
@@ -24,13 +24,13 @@ function processElement(vnode, container) {
 function mountElement(vnode, container) {
   const el = (vnode.el = document.createElement(vnode.type)); // 此处 type 类型为 string，表示普通标签元素
 
-  const { children } = vnode;
+  const { children, shapeFlag } = vnode;
 
   // 处理 children
-  if (typeof children === "string") {
+  if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     // 单一子节点，且为string，就是文本节点
     el.textContent = children;
-  } else if (Array.isArray(children)) {
+  } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     mountChild(vnode, el);
   }
 
