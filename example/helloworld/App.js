@@ -10,6 +10,8 @@ export const App = {
       {
         id: "root",
         class: ["large"],
+        onClick: () => console.log("click"),
+        onMouseDown: () => console.log("mousedown"),
       },
       [
         h("span", { class: "red" }, "hi, "),

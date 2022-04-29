@@ -24,7 +24,7 @@ function processElement(vnode, container) {
 function mountElement(vnode, container) {
   const el = (vnode.el = document.createElement(vnode.type)); // 此处 type 类型为 string，表示普通标签元素
 
-  const { children, shapeFlag } = vnode;
+  const { children, shapeFlag, props } = vnode;
 
   // 处理 children
   if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
@@ -35,10 +35,16 @@ function mountElement(vnode, container) {
   }
 
   // 处理 props
-  if (vnode.props) {
-    for (const key in vnode.props) {
-      const val = vnode.props[key];
-      el.setAttribute(key, val);
+  if (props) {
+    for (const key in props) {
+      const val = props[key];
+      // 判断以on开头的注册事件
+      if (/^on[A-Z]/.test(key)) {
+        const event = key.slice(2).toLowerCase();
+        el.addEventListener(event, props[key]);
+      } else {
+        el.setAttribute(key, val);
+      }
     }
   }
   container.append(el);
