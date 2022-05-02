@@ -1,5 +1,8 @@
 import { ShapeFlags } from "../shared/ShapeFlags";
 
+export const Fragment = Symbol("Fragment"); // Fragment 节点
+export const Text = Symbol("Text"); // Text 节点
+
 export function createVNode(type, props?, children?) {
   const vnode = {
     type,
@@ -23,6 +26,11 @@ export function createVNode(type, props?, children?) {
   }
 
   return vnode;
+}
+
+// 对 Text 节点进行单独处理
+export function createTextVNode(text: string) {
+  return createVNode(Text, {}, text);
 }
 
 function getShapeFlag(type) {

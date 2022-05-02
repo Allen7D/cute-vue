@@ -1,4 +1,4 @@
-import { h } from "../../lib/cute-vue.esm.js";
+import { h, createTextVNode } from "../../lib/cute-vue.esm.js";
 import { SingleSlot, ArraySlot, NameSlot, ScopeSlot } from "./Foo.js";
 
 export const App = {
@@ -61,7 +61,10 @@ export const App = {
       ScopeSlot,
       {},
       {
-        default: ({ age }) => [h("div", {}, "My age is " + age)],
+        default: ({ age }) => [
+          h("div", {}, "My age is " + age),
+          createTextVNode("Hello World!"),
+        ],
       }
     );
 

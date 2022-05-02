@@ -1,5 +1,6 @@
 import { createComponentInstance, setupComponent } from "./component";
 import { ShapeFlags } from "../shared/ShapeFlags";
+import { Fragment, Text } from "./vnode";
 
 export function render(vnode, container) {
   // patch 中会进行递归处理
@@ -8,12 +9,32 @@ export function render(vnode, container) {
 
 // patch(打补丁)，分为挂载和更新，也包括区分 Component 的处理和 Element 的处理。
 function patch(vnode, container) {
-  const { shapeFlag } = vnode;
-  if (shapeFlag & ShapeFlags.ELEMENT) {
-    processElement(vnode, container);
-  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-    processComponent(vnode, container);
+  const { type, shapeFlag } = vnode;
+  switch (type) {
+    case Fragment:
+      processFragment(vnode, container);
+      break;
+    case Text:
+      processText(vnode, container);
+      break;
+    default:
+      if (shapeFlag & ShapeFlags.ELEMENT) {
+        processElement(vnode, container);
+      } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        processComponent(vnode, container);
+      }
+      break;
   }
+}
+
+function processFragment(vnode, container) {
+  mountChildren(vnode, container);
+}
+
+function processText(vnode, container) {
+  const { children } = vnode;
+  const textNode = (vnode.el = document.createTextNode(children));
+  container.append(textNode);
 }
 
 function processElement(vnode, container) {
@@ -31,7 +52,7 @@ function mountElement(vnode, container) {
     // 单一子节点，且为string，就是文本节点
     el.textContent = children;
   } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    mountChild(vnode, el);
+    mountChildren(vnode, el);
   }
 
   // 处理 props
@@ -50,7 +71,7 @@ function mountElement(vnode, container) {
   container.append(el);
 }
 
-function mountChild(vnode, container) {
+function mountChildren(vnode, container) {
   vnode.children.forEach((v) => {
     patch(v, container);
   });
