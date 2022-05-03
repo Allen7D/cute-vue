@@ -37,10 +37,12 @@ function setupStatefulComponent(instance) {
   const { setup } = Component;
 
   if (setup) {
+    setCurrentInstance(instance);
     // setup可以返回 function 或者 Object
     const setupResult = setup(shallowReadonly(instance.props), {
       emit: instance.emit,
     }); // 执行Vue实例中的setup
+    setCurrentInstance(null);
     handleSetupResult(instance, setupResult);
   }
 }
@@ -61,4 +63,15 @@ function finishComponentSetup(instance) {
 
   // 保证组件 render 肯定有值
   instance.render = Component.render;
+}
+
+// 当前组件的实例（仅在setup中使用）
+let currentInstance = null;
+
+export function getCurrentInstance() {
+  return currentInstance;
+}
+
+export function setCurrentInstance(instance) {
+  currentInstance = instance;
 }
