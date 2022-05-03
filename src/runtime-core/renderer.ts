@@ -4,31 +4,31 @@ import { Fragment, Text } from "./vnode";
 
 export function render(vnode, container) {
   // patch 中会进行递归处理
-  patch(vnode, container);
+  patch(vnode, container, null);
 }
 
 // patch(打补丁)，分为挂载和更新，也包括区分 Component 的处理和 Element 的处理。
-function patch(vnode, container) {
+function patch(vnode, container, parentComponent) {
   const { type, shapeFlag } = vnode;
   switch (type) {
     case Fragment:
-      processFragment(vnode, container);
+      processFragment(vnode, container, parentComponent);
       break;
     case Text:
       processText(vnode, container);
       break;
     default:
       if (shapeFlag & ShapeFlags.ELEMENT) {
-        processElement(vnode, container);
+        processElement(vnode, container, parentComponent);
       } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-        processComponent(vnode, container);
+        processComponent(vnode, container, parentComponent);
       }
       break;
   }
 }
 
-function processFragment(vnode, container) {
-  mountChildren(vnode, container);
+function processFragment(vnode, container, parentComponent) {
+  mountChildren(vnode, container, parentComponent);
 }
 
 function processText(vnode, container) {
@@ -37,12 +37,12 @@ function processText(vnode, container) {
   container.append(textNode);
 }
 
-function processElement(vnode, container) {
-  mountElement(vnode, container);
+function processElement(vnode, container, parentComponent) {
+  mountElement(vnode, container, parentComponent);
 }
 
 // 挂载标签元素，通过递归来构建一棵节点树
-function mountElement(vnode, container) {
+function mountElement(vnode, container, parentComponent) {
   const el = (vnode.el = document.createElement(vnode.type)); // 此处 type 类型为 string，表示普通标签元素
 
   const { children, shapeFlag, props } = vnode;
@@ -52,7 +52,7 @@ function mountElement(vnode, container) {
     // 单一子节点，且为string，就是文本节点
     el.textContent = children;
   } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    mountChildren(vnode, el);
+    mountChildren(vnode, el, parentComponent);
   }
 
   // 处理 props
@@ -71,21 +71,21 @@ function mountElement(vnode, container) {
   container.append(el);
 }
 
-function mountChildren(vnode, container) {
+function mountChildren(vnode, container, parentComponent) {
   vnode.children.forEach((v) => {
-    patch(v, container);
+    patch(v, container, parentComponent);
   });
 }
 
-function processComponent(vnode, container) {
+function processComponent(vnode, container, parentComponent) {
   // 组件初始化 or 组件更新
-  mountComponent(vnode, container); // 组件初始化
+  mountComponent(vnode, container, parentComponent); // 组件初始化
 }
 
 // 挂载组件
-function mountComponent(initailVnode, container) {
+function mountComponent(initailVnode, container, parentComponent) {
   // 创建组件实例对象
-  const instance = createComponentInstance(initailVnode);
+  const instance = createComponentInstance(initailVnode, parentComponent);
   // 初始化组件
   setupComponent(instance);
   //
@@ -100,7 +100,7 @@ function setupRenderEffect(instance, initailVnode, container) {
   // 2. 触发生命周期 beforeMount hook
   // TODO
   // 3. 调用patch，初始化子组件（递归）
-  patch(subTree, container); // 再进行 Component 和 Element 的判断（递归）
+  patch(subTree, container, instance); // 再进行 Component 和 Element 的判断（递归）
   // 4. 触发生命周期 mounted hook
   // TODO
   initailVnode.el = subTree.el;
