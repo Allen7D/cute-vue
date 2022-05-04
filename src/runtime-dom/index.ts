@@ -5,13 +5,19 @@ function createElement(type) {
   return document.createElement(type);
 }
 // 给元素添加属性
-function patchProp(el, key, val) {
+function patchProp(el, key, prevVal, nextVal) {
   // 判断以on开头的注册事件
   if (/^on[A-Z]/.test(key)) {
     const event = key.slice(2).toLowerCase();
-    el.addEventListener(event, val);
+    el.addEventListener(event, nextVal);
   } else {
-    el.setAttribute(key, val);
+    // 旧属性不存在于新的节点，则移除
+    // 否者，更新或者添加
+    if (nextVal === undefined || nextVal === null) {
+      el.removeAttribute(key);
+    } else {
+      el.setAttribute(key, nextVal);
+    }
   }
 }
 // 将子元素插入到父元素中
@@ -23,11 +29,29 @@ function createText(text) {
   return document.createTextNode(text);
 }
 
+/**
+ *
+ * @param el DOM元素
+ * @param text 文本
+ */
+function setElementText(el, text) {
+  el.textContent = text;
+}
+
+function remove(child) {
+  const parent = child.parentNode; // .parentNode 是 DOM 自身的属性
+  if (parent) {
+    parent.removeChild(child);
+  }
+}
+
 const renderer: any = createRenderer({
   createElement,
   patchProp,
   insert,
   createText,
+  setElementText,
+  remove,
 });
 
 export function createApp(...args) {
