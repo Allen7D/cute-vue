@@ -20,9 +20,14 @@ function patchProp(el, key, prevVal, nextVal) {
     }
   }
 }
-// 将子元素插入到父元素中
-function insert(el, parent) {
-  parent.append(el);
+/**
+ * 将子元素插入到父元素中
+ * @param child 待插入的子元素
+ * @param parent 容器
+ * @param anchor 插入的锚点
+ */
+function insert(child, parent, anchor) {
+  parent.insertBefore(child, anchor || null); // 添加到 anchor 下标之前
 }
 
 function createText(text) {

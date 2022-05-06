@@ -1,13 +1,14 @@
 import { ShapeFlags } from "../shared/ShapeFlags";
 
 export const Fragment = Symbol("Fragment"); // Fragment 节点
-export const Text = Symbol("Text"); // Text 节点
+export const Text = Symbol("Text"); // 文本节点
 
 export function createVNode(type, props?, children?) {
   const vnode = {
     type,
     props,
     children,
+    key: props && props.key,
     shapeFlag: getShapeFlag(type),
     el: null,
   };
@@ -37,4 +38,8 @@ function getShapeFlag(type) {
   return typeof type === "string"
     ? ShapeFlags.ELEMENT
     : ShapeFlags.STATEFUL_COMPONENT;
+}
+
+export function isSameVNodeType(n1, n2) {
+  return n1.type === n2.type && n1.key === n2.key;
 }

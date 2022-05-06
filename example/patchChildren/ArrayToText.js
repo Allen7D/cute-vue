@@ -27,9 +27,13 @@ export default {
 
     return h("div", {}, [
       self.isChange === true
-        ? h("div", {}, nextChildren)
-        : h("div", {}, prevChildren),
-      h("button", { onClick: this.toggleClick }, "Array 与 Text 切换"),
+        ? h("div", { key: "ctx" }, nextChildren)
+        : h("div", { key: "ctx" }, prevChildren),
+      h(
+        "button",
+        { key: "btn", onClick: this.toggleClick },
+        "Array 与 Text 切换"
+      ),
     ]);
   },
 };
