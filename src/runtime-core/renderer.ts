@@ -100,9 +100,6 @@ export function createRenderer(options) {
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         // 新旧子节点都是「一组子节点」，涉及 Diff 算法
-        // 非 Diff 算法（暴力处理: 先全部卸载，再重新挂载）
-        // unmountChildren(c1);
-        // mountChildren(c2, container, parentComponent, anchor);
         // Diff 算法
         patchKeyedChildren(c1, c2, container, parentComponent, anchor);
       } else {
@@ -120,7 +117,8 @@ export function createRenderer(options) {
   }
 
   /**
-   * 简单 Diff 算法 （基于递增序列）
+   * 双端 Diff 算法
+   * Vue2 对应的代码 https://github.com/vuejs/vue/blob/dev/src/core/vdom/patch.js#L404
    * @param c1 旧节点的 children
    * @param c2 新节点的 children
    * @param container 容器
@@ -136,54 +134,91 @@ export function createRenderer(options) {
   ) {
     const l1 = c1.length;
     const l2 = c2.length;
-    let lastIndex = 0; // 最大索引值: 依据「新的子节点」在「旧的一组子节点」中对应的下标位置来处理
-    let find = false;
-    // 每一个新的节点，都在旧的一组节点中遍历，查看是否能找到
-    for (let i = 0; i < l2; ++i) {
-      const newVNode = c2[i]; // 新的节点
-      let j = 0;
-      find = false; // 表示还未找到
-      for (j; j < l1; j++) {
-        const oldVNode = c1[j];
-        if (isSameVNodeType(newVNode, oldVNode)) {
-          find = true; // 找到可复用的节点;
-          patch(oldVNode, newVNode, container, parentComponent, null);
-          // j 不符合序列递增的特性（依据旧的一组节点的下标）
-          if (j < lastIndex) {
-            // newVNode（新的子节点）在「旧的一组子节点」中存在，可以移动（newVnode 对应的真实 DOM 需要移动）
-            // prevNode 是之前已经移动完毕的（它所对应的真实 DOM 的后续移动的参考系）
-            const prevNode = c2[i - 1];
-            // 如果 prevNode 不存在，则 newVNode 为第一个节点，不需要移动
-            if (prevNode) {
-              const anchor = prevNode.el.nextSibling;
-              hostInsert(newVNode.el, container, anchor); // newVNode 对应的真实 DOM 移动到 prevNode 对应的真实 DOM 前
-            }
-          } else {
-            lastIndex = j;
-          }
-          break; // 找到，则直接进入下一次循环
-        }
-      }
-      // find 为 false (没有找到)
-      if (!find) {
-        let anchor = null;
-        const prevNode = c2[i - 1];
-        if (prevNode) {
-          anchor = prevNode.el.nextSibling;
+    // 四个索引值
+    let oldStartIdx = 0;
+    let oldEndIdx = l1 - 1;
+    let newStartIdx = 0;
+    let newEndIdx = l2 - 1;
+    // 四个索引指向的 vnode 节点
+    let oldStartVNode = c1[oldStartIdx];
+    let oldEndVNode = c1[oldEndIdx];
+    let newStartVNode = c2[newStartIdx];
+    let newEndVNode = c2[newEndIdx];
+
+    while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+      // 判断旧的双端的首位节点是否存在
+      // 如果为 undefined，则说明该节点已经被处理过了，直接跳到下一个位置
+      if (!oldStartVNode) {
+        oldStartVNode = c1[++oldStartIdx];
+      } else if (!oldEndVNode) {
+        oldEndVNode = c1[--oldEndIdx];
+      } else if (oldStartVNode.key === newStartVNode.key) {
+        // 第一步: oldStartVNode 和 newStartVNode 比较
+        // 节点在新的顺序中仍然位于顶部，不需要移动 DOM
+        patch(oldStartVNode, newStartVNode, container, parentComponent, null);
+        // 更新索引，并指向下一个位置
+        oldStartVNode = c1[++oldStartIdx];
+        newStartVNode = c2[++newStartIdx];
+      } else if (oldEndVNode.key === newEndVNode.key) {
+        // 第二步: oldEndVNode 和 newEndVNode 比较
+        // 节点在新的顺序中仍然位于尾部，不需要移动 DOM
+        patch(oldEndVNode, newEndVNode, container, parentComponent, null);
+        // 更新索引，并指向下一个位置
+        oldEndVNode = c1[--oldEndIdx];
+        newEndVNode = c2[--newEndIdx];
+      } else if (oldStartVNode.key === newEndVNode.key) {
+        // 第三步: oldStartVNode 和 newEndVNode 比较
+        patch(oldStartVNode, newEndVNode, container, parentComponent, null);
+        // 节点在新的顺序中位于尾部，需要移动 DOM 到（旧的）双端区域的尾部
+        const anchor = oldEndVNode.el.nextSibling; // 双端区域的尾部
+        hostInsert(newEndVNode.el, container, anchor); // 将 DOM 从双端区域的顶部移动到双端区域尾部
+        // 更新索引，并指向下一个位置
+        oldStartVNode = c1[++oldStartIdx];
+        newEndVNode = c2[--newEndIdx];
+      } else if (oldEndVNode.key === newStartVNode.key) {
+        // 第四步: oldEndVNode 和 newStartVNode 比较
+        patch(oldEndVNode, newStartVNode, container, parentComponent, null);
+        // 移动 DOM
+        const anchor = oldStartVNode.el;
+        hostInsert(newStartVNode.el, container, anchor);
+        // 更新索引值，并指向下一个位置
+        oldEndVNode = c1[--oldEndIdx];
+        newStartVNode = c2[++newStartIdx];
+      } else {
+        // 在新旧双端的首尾节点，没有匹配到，则进入「旧的一组子节点」中遍历，查到与 newStartVNode 相同 key 值的节点
+        // 此外，需判断 vnode 可以为 undefined
+        const idxInOld = c1.findIndex((vnode) => {
+          return vnode && vnode.key === newStartVNode.key;
+        });
+        if (idxInOld > -1) {
+          const vnodeToMove = c1[idxInOld]; // 需要移动的旧的节点
+          patch(vnodeToMove, newStartVNode, container, parentComponent, null);
+          const anchor = oldStartVNode.el; // oldStartVNode.el 是（旧的）双端的顶部
+          // 将 vnodeToMove.el 移动到 旧的双端的前面
+          hostInsert(vnodeToMove.el, container, anchor);
+          c1[idxInOld] = undefined; // 旧双端内部的节点被移动到双端之外，以后不在需要移动，因此需要设为undefined
         } else {
-          anchor = container.firstChild; // 使用容器元素的 firstChild 作为锚点
+          // 新增
+          const anchor = oldStartVNode.el; // 因为 newStartVNode 位于新的双端的顶部，所以要新增在旧的双端的顶部
+          patch(null, newStartVNode, container, parentComponent, anchor);
         }
-        // 挂载新的子节点
-        patch(null, newVNode, container, parentComponent, anchor);
+        newStartVNode = c2[++newStartIdx];
       }
     }
-    // 遍历旧的一组子节点
-    // 判断: 如果不存在于新的一组子节点中，则移除
-    for (let i = 0; i < l1; i++) {
-      const oldVNode = c1[i];
-      const has = !~c2.findIndex((vnode) => vnode.key === oldVNode.key); // 未找到则为 -1
-      if (has) {
-        unmount(oldVNode);
+
+    // 循环结束后，检查索引值的情况
+    // 如果新的双端未结束: newStartIdx <= newEndIdx
+    // 新增操作
+    if (oldEndIdx < oldStartIdx && newStartIdx <= newEndIdx) {
+      for (let i = newStartIdx; i <= newEndIdx; i++) {
+        let anchor = c2[newEndIdx + 1] ? c2[newEndIdx + 1].el : null; // c2[newEndIdx + 1] 是已经被处理过的节点，其对应的真实 DOM 可以用来作为锚点
+        patch(null, c2[i], container, parentComponent, anchor);
+      }
+    } else if (newEndIdx < newStartIdx && oldStartIdx <= oldEndIdx) {
+      // 如果旧的双端未结束: oldStartIdx <= oldEndIdx
+      // 移除操作
+      for (let i = oldStartIdx; i <= oldEndIdx; i++) {
+        unmount(c1[i]);
       }
     }
   }

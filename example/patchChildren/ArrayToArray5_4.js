@@ -12,6 +12,8 @@ import { ref, h } from "../../lib/cute-vue.esm.js";
 // a b (c d e z) f g
 // a b (d c y e) f g
 
+// 此处，每次渲染前都对 prevChildren 和 nextChildren 进行复制，避免删除操作会影响原始数据。
+
 const prevChildren = [
   h("p", { key: "A" }, "A"),
   h("p", { key: "B" }, "B"),
@@ -57,8 +59,8 @@ export default {
       h("div", { key: "prev", class: "red" }, "prev: a b (c d e z) f g"),
       h("div", { key: "next", class: "blue" }, "next: a b (d c y e) f g"),
       self.isChange === true
-        ? h("div", { key: "ctx" }, nextChildren)
-        : h("div", { key: "ctx" }, prevChildren),
+        ? h("div", { key: "ctx" }, [...nextChildren])
+        : h("div", { key: "ctx" }, [...prevChildren]),
       h("button", { key: "btn", onClick: this.toggleClick }, "5.4. 综合例子"),
     ]);
   },
