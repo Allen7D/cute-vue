@@ -35,17 +35,13 @@ export default {
     const self = this;
 
     return h("div", {}, [
-      h("div", { key: "tip" }, "Tips: 新的比老的长(右侧)，创建新的"),
-      h("div", { key: "prev", class: "red" }, "prev: (a b)"),
-      h("div", { key: "next", class: "blue" }, "next: c (a b)"),
+      h("div", {}, "Tips: 新的比老的长(右侧)，创建新的"),
+      h("div", { class: "red" }, "prev: (a b)"),
+      h("div", { class: "blue" }, "next: c (a b)"),
       self.isChange === true
-        ? h("div", { key: "ctx" }, nextChildren)
-        : h("div", { key: "ctx" }, prevChildren),
-      h(
-        "button",
-        { key: "btn", onClick: this.toggleClick },
-        "3.2. 新的比老的长(右侧)"
-      ),
+        ? h("div", {}, nextChildren)
+        : h("div", {}, prevChildren),
+      h("button", { onClick: this.toggleClick }, "3.2. 新的比老的长(右侧)"),
     ]);
   },
 };

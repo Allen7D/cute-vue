@@ -51,17 +51,13 @@ export default {
     const self = this;
 
     return h("div", {}, [
-      h(
-        "div",
-        { key: "tip" },
-        "Tips: 移动 (节点存在于新的和老的里面，但是位置变了)"
-      ),
-      h("div", { key: "prev", class: "red" }, "prev: a b (c d e) f g"),
-      h("div", { key: "next", class: "blue" }, "next: a b (e c d) f g"),
+      h("div", {}, "Tips: 移动 (节点存在于新的和老的里面，但是位置变了)"),
+      h("div", { class: "red" }, "prev: a b (c d e) f g"),
+      h("div", { class: "blue" }, "next: a b (e c d) f g"),
       self.isChange === true
-        ? h("div", { key: "ctx" }, nextChildren)
-        : h("div", { key: "ctx" }, prevChildren),
-      h("button", { key: "btn", onClick: this.toggleClick }, "5.2. 移动"),
+        ? h("div", {}, nextChildren)
+        : h("div", {}, prevChildren),
+      h("button", { onClick: this.toggleClick }, "5.2. 移动"),
     ]);
   },
 };

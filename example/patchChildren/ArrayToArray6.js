@@ -3,23 +3,27 @@
 
 import { ref, h } from "../../lib/cute-vue.esm.js";
 
-// 1. 左侧的对比
-// (a b) c
-// (a b) d e
+// 6. 某个子节点没有 key 的场景
+//  c 节点应该是 move 而不是删除之后重新创建的
+// a (c b) d
+// a (b c) d
+
 const prevChildren = [
   h("p", { key: "A" }, "A"),
+  h("p", {}, "C"),
   h("p", { key: "B" }, "B"),
-  h("p", { key: "C" }, "C"),
+  h("p", { key: "D" }, "D"),
 ];
+
 const nextChildren = [
   h("p", { key: "A" }, "A"),
   h("p", { key: "B" }, "B"),
+  h("p", {}, "C"),
   h("p", { key: "D" }, "D"),
-  h("p", { key: "E" }, "E"),
 ];
 
 export default {
-  name: "ArrayToArray1",
+  name: "ArrayToArray6",
   setup() {
     const isChange = ref(false);
     window.isChange = isChange;
@@ -37,13 +41,13 @@ export default {
     const self = this;
 
     return h("div", {}, [
-      h("div", {}, "Tips: 左侧的对比"),
-      h("div", { class: "red" }, "prev: (a b) c"),
-      h("div", { class: "blue" }, "next: (a b) d e"),
+      h("div", {}, "Tips: C 没有 key 的场景"),
+      h("div", { class: "red" }, "prev: a (c b) d"),
+      h("div", { class: "blue" }, "next: a (b c) d"),
       self.isChange === true
         ? h("div", {}, nextChildren)
         : h("div", {}, prevChildren),
-      h("button", { onClick: this.toggleClick }, "1. 左侧的对比"),
+      h("button", { onClick: this.toggleClick }, "6. C 没有 key"),
     ]);
   },
 };

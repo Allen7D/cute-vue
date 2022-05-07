@@ -55,13 +55,13 @@ export default {
     const self = this;
 
     return h("div", {}, [
-      h("div", { key: "tip" }, "Tips: 综合例子"),
-      h("div", { key: "prev", class: "red" }, "prev: a b (c d e z) f g"),
-      h("div", { key: "next", class: "blue" }, "next: a b (d c y e) f g"),
+      h("div", {}, "Tips: 综合例子"),
+      h("div", { class: "red" }, "prev: a b (c d e z) f g"),
+      h("div", { class: "blue" }, "next: a b (d c y e) f g"),
       self.isChange === true
-        ? h("div", { key: "ctx" }, [...nextChildren])
-        : h("div", { key: "ctx" }, [...prevChildren]),
-      h("button", { key: "btn", onClick: this.toggleClick }, "5.4. 综合例子"),
+        ? h("div", {}, nextChildren)
+        : h("div", {}, prevChildren),
+      h("button", { onClick: this.toggleClick }, "5.4. 综合例子"),
     ]);
   },
 };

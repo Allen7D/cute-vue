@@ -13,6 +13,7 @@ import ArrayToArray5_1_1 from "./ArrayToArray5_1_1.js";
 import ArrayToArray5_2 from "./ArrayToArray5_2.js";
 import ArrayToArray5_3 from "./ArrayToArray5_3.js";
 import ArrayToArray5_4 from "./ArrayToArray5_4.js";
+import ArrayToArray6 from "./ArrayToArray6.js";
 
 export default {
   name: "App",
@@ -51,6 +52,7 @@ export default {
       h("p", { class: "line" }),
       h(ArrayToArray5_4),
       h("p", { class: "line" }),
+      h(ArrayToArray6),
     ]);
   },
 };

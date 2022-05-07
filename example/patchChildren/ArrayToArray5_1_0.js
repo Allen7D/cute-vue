@@ -51,17 +51,13 @@ export default {
     const self = this;
 
     return h("div", {}, [
-      h(
-        "div",
-        { key: "tip" },
-        "Tips: 删除老的 (在老的里面存在，新的里面不存在)"
-      ),
-      h("div", { key: "prev", class: "red" }, "prev: a b (c d) f g"),
-      h("div", { key: "next", class: "blue" }, "next: a b (e c) f g"),
+      h("div", {}, "Tips: 删除老的 (在老的里面存在，新的里面不存在)"),
+      h("div", { class: "red" }, "prev: a b (c d) f g"),
+      h("div", { class: "blue" }, "next: a b (e c) f g"),
       self.isChange === true
-        ? h("div", { key: "ctx" }, nextChildren)
-        : h("div", { key: "ctx" }, prevChildren),
-      h("button", { key: "btn", onClick: this.toggleClick }, "5.1.0. 删除老的"),
+        ? h("div", {}, nextChildren)
+        : h("div", {}, prevChildren),
+      h("button", { onClick: this.toggleClick }, "5.1.0. 删除老的"),
     ]);
   },
 };

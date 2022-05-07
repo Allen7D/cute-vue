@@ -53,15 +53,15 @@ export default {
     return h("div", {}, [
       h(
         "div",
-        { key: "tip" },
+        {},
         "Tips: 中间部分，老的比新的多， 那么多出来的直接就可以被干掉(优化删除逻辑)"
       ),
-      h("div", { key: "prev", class: "red" }, "prev: a b (c e d) f g"),
-      h("div", { key: "next", class: "blue" }, "next: a b (e c) f g"),
+      h("div", { class: "red" }, "prev: a b (c e d) f g"),
+      h("div", { class: "blue" }, "next: a b (e c) f g"),
       self.isChange === true
-        ? h("div", { key: "ctx" }, nextChildren)
-        : h("div", { key: "ctx" }, prevChildren),
-      h("button", { key: "btn", onClick: this.toggleClick }, "5.1.1 删除老的"),
+        ? h("div", {}, nextChildren)
+        : h("div", {}, prevChildren),
+      h("button", { onClick: this.toggleClick }, "5.1.1 删除老的"),
     ]);
   },
 };
