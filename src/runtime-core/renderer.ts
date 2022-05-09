@@ -1,6 +1,7 @@
 import { createComponentInstance, setupComponent } from "./component";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { Fragment, isSameVNodeType, Text } from "./vnode";
+import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppAPI } from "./createApp";
 import { EMPTY_OBJ } from "../shared";
 import { effect } from "../reactivity";
@@ -340,19 +341,26 @@ export function createRenderer(options) {
   }
 
   function processComponent(n1, n2, container, parentComponent, anchor) {
-    // 组件初始化 or 组件更新
-    mountComponent(n2, container, parentComponent, anchor); // 组件初始化
+    if (!n1) {
+      mountComponent(n2, container, parentComponent, anchor); // 组件挂载（初始化）
+    } else {
+      updateComponent(n1, n2); // 组件更新
+    }
   }
 
   // 挂载组件
-  function mountComponent(initailVnode, container, parentComponent, anchor) {
-    const instance = createComponentInstance(initailVnode, parentComponent); // 创建组件实例对象
+  function mountComponent(initialVNode, container, parentComponent, anchor) {
+    // vnode 与 component 建立双向关系
+    const instance = (initialVNode.component = createComponentInstance(
+      initialVNode,
+      parentComponent
+    )); // 创建组件实例对象
     setupComponent(instance); // 初始化组件
-    setupRenderEffect(instance, initailVnode, container, anchor); // 处理组件的依赖
+    setupRenderEffect(instance, initialVNode, container, anchor); // 处理组件的依赖
   }
 
-  function setupRenderEffect(instance, initailVnode, container, anchor) {
-    effect(() => {
+  function setupRenderEffect(instance, initialVNode, container, anchor) {
+    instance.update = effect(() => {
       if (!instance.isMounted) {
         const { proxy } = instance;
         // 1、调用render，获取vnode(子组件
@@ -364,16 +372,36 @@ export function createRenderer(options) {
         patch(null, subTree, container, instance, anchor); // 再进行 Component 和 Element 的判断（递归）
         // 4. 触发生命周期 mounted hook
         // TODO
-        initailVnode.el = subTree.el;
+        initialVNode.el = subTree.el;
         instance.isMounted = true;
       } else {
-        const { proxy } = instance;
+        const { proxy, vnode, next } = instance;
+        if (next) {
+          next.el = vnode.el;
+          // 在执行 instance.render 前（更新 props 和 vnode）
+          // 更新 props 用于 this.$props; 更新 vnode 用于 subTree;
+          updateComponentPreRender(instance, next);
+        }
         const subTree = instance.render.call(proxy);
         const prevSubTree = instance.subTree;
         instance.subTree = subTree;
         patch(prevSubTree, subTree, container, instance, anchor);
       }
     });
+  }
+
+  // 组件更新
+  function updateComponent(n1, n2) {
+    const instance = (n2.component = n1.component); // instance 是 n1 和 n2 共用的
+    if (shouldUpdateComponent(n1, n2)) {
+      // instance.vnode 指向 n1，instance.next 指向 n2
+      instance.next = n2;
+      instance.update(); // update 就是组件的 runner
+    } else {
+      // 不更新的处理逻辑，也要更新 instance.vnode 的指向
+      n2.el = n1.el;
+      instance.vnode = n2;
+    }
   }
 
   return {
@@ -383,6 +411,14 @@ export function createRenderer(options) {
     // createAppAPI 的核心还是提供 mount 和 render
     createApp: createAppAPI(render),
   };
+}
+
+// 更新组件的 vnode 和 props，用于渲染（在执行 instance.render 前）
+function updateComponentPreRender(instance, nextVNode) {
+  instance.vnode = nextVNode;
+  instance.next = null;
+
+  instance.props = nextVNode.props;
 }
 
 // https://en.wikipedia.org/wiki/Longest_increasing_subsequence
