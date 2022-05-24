@@ -1,10 +1,11 @@
 import { createComponentInstance, setupComponent } from "./component";
 import { ShapeFlags } from "../shared/ShapeFlags";
+import { EMPTY_OBJ } from "../shared";
 import { Fragment, isSameVNodeType, Text } from "./vnode";
 import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppAPI } from "./createApp";
-import { EMPTY_OBJ } from "../shared";
 import { effect } from "../reactivity";
+import { queueJob } from "./scheduler";
 
 export function createRenderer(options) {
   const {
@@ -360,34 +361,43 @@ export function createRenderer(options) {
   }
 
   function setupRenderEffect(instance, initialVNode, container, anchor) {
-    instance.update = effect(() => {
-      if (!instance.isMounted) {
-        const { proxy } = instance;
-        // 1、调用render，获取vnode(子组件
-        // 渲染的不是App实例，而是 render 函数内部的 Element 的值
-        const subTree = (instance.subTree = instance.render.call(proxy)); // 虚拟节点树
-        // 2. 触发生命周期 beforeMount hook
-        // TODO
-        // 3. 调用patch，初始化子组件（递归）
-        patch(null, subTree, container, instance, anchor); // 再进行 Component 和 Element 的判断（递归）
-        // 4. 触发生命周期 mounted hook
-        // TODO
-        initialVNode.el = subTree.el;
-        instance.isMounted = true;
-      } else {
-        const { proxy, vnode, next } = instance;
-        if (next) {
-          next.el = vnode.el;
-          // 在执行 instance.render 前（更新 props 和 vnode）
-          // 更新 props 用于 this.$props; 更新 vnode 用于 subTree;
-          updateComponentPreRender(instance, next);
+    instance.update = effect(
+      () => {
+        if (!instance.isMounted) {
+          console.log("----- mount -----");
+          const { proxy } = instance;
+          // 1、调用render，获取vnode(子组件
+          // 渲染的不是App实例，而是 render 函数内部的 Element 的值
+          const subTree = (instance.subTree = instance.render.call(proxy)); // 虚拟节点树
+          // 2. 触发生命周期 beforeMount hook
+          // TODO
+          // 3. 调用patch，初始化子组件（递归）
+          patch(null, subTree, container, instance, anchor); // 再进行 Component 和 Element 的判断（递归）
+          // 4. 触发生命周期 mounted hook
+          // TODO
+          initialVNode.el = subTree.el;
+          instance.isMounted = true;
+        } else {
+          console.log("----- update -----");
+          const { proxy, vnode, next } = instance;
+          if (next) {
+            next.el = vnode.el;
+            // 在执行 instance.render 前（更新 props 和 vnode）
+            // 更新 props 用于 this.$props; 更新 vnode 用于 subTree;
+            updateComponentPreRender(instance, next);
+          }
+          const subTree = instance.render.call(proxy);
+          const prevSubTree = instance.subTree;
+          instance.subTree = subTree;
+          patch(prevSubTree, subTree, container, instance, anchor);
         }
-        const subTree = instance.render.call(proxy);
-        const prevSubTree = instance.subTree;
-        instance.subTree = subTree;
-        patch(prevSubTree, subTree, container, instance, anchor);
+      },
+      {
+        scheduler() {
+          queueJob(instance.update);
+        },
       }
-    });
+    );
   }
 
   // 组件更新

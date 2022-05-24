@@ -1,10 +1,12 @@
 import { hasOwn } from "../shared";
+import { nextTick } from "./scheduler";
 
 // i 是 instance
 const publicPropertiesMap = {
   $el: (i) => i.vnode.el,
   $slots: (i) => i.slots,
   $props: (i) => i.props,
+  $nextTick: (i) => nextTick.bind(i.proxy),
 };
 
 export const PublicInstanceProxyHandlers = {
