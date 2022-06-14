@@ -1,11 +1,13 @@
 import { createComponentInstance, setupComponent } from "./component";
 import { ShapeFlags } from "../shared/ShapeFlags";
-import { EMPTY_OBJ } from "../shared";
+import { EMPTY_OBJ, invokeArrayFns } from "../shared";
 import { Fragment, isSameVNodeType, Text } from "./vnode";
 import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppAPI } from "./createApp";
 import { effect } from "../reactivity";
-import { queueJob } from "./scheduler";
+import { queueJob, queuePostFlushCb } from "./scheduler";
+
+export const queuePostRenderEffect = queuePostFlushCb; // 未来 Suspense 特性会支持 queueEffectWithSuspense
 
 export function createRenderer(options) {
   const {
@@ -365,31 +367,45 @@ export function createRenderer(options) {
       () => {
         if (!instance.isMounted) {
           console.log("----- mount -----");
-          const { proxy } = instance;
-          // 1、调用render，获取vnode(子组件
-          // 渲染的不是App实例，而是 render 函数内部的 Element 的值
+          const { bm, m, proxy } = instance;
+
+          // 1. 触发生命周期 hhh hook (beforeMount 是同步执行的)
+          if (bm) {
+            invokeArrayFns(bm);
+          }
+          // 2. 调用render，获取vnode(子组件)
           const subTree = (instance.subTree = instance.render.call(proxy)); // 虚拟节点树
-          // 2. 触发生命周期 beforeMount hook
-          // TODO
           // 3. 调用patch，初始化子组件（递归）
           patch(null, subTree, container, instance, anchor); // 再进行 Component 和 Element 的判断（递归）
-          // 4. 触发生命周期 mounted hook
-          // TODO
+          // 4. 触发生命周期 mounted hook (异步)
+          if (m) {
+            queuePostRenderEffect(m);
+          }
+
           initialVNode.el = subTree.el;
           instance.isMounted = true;
         } else {
           console.log("----- update -----");
-          const { proxy, vnode, next } = instance;
+          const { next, bu, u, proxy, vnode } = instance;
           if (next) {
             next.el = vnode.el;
             // 在执行 instance.render 前（更新 props 和 vnode）
             // 更新 props 用于 this.$props; 更新 vnode 用于 subTree;
             updateComponentPreRender(instance, next);
           }
+          // 触发生命周期 beforeUpdate hook (beforeUpdate 是同步执行的)
+          if (bu) {
+            invokeArrayFns(bu);
+          }
+
           const subTree = instance.render.call(proxy);
           const prevSubTree = instance.subTree;
           instance.subTree = subTree;
           patch(prevSubTree, subTree, container, instance, anchor);
+          // 触发生命周期 updated hook (异步)
+          if (u) {
+            queuePostRenderEffect(u);
+          }
         }
       },
       {

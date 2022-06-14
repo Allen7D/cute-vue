@@ -50,5 +50,12 @@ export const toTypeString = (value: unknown): string =>
 export const isPlainObject = (val: unknown): val is object =>
   toTypeString(val) === "[object Object]";
 
+// 依次调用函数数组
+export const invokeArrayFns = (fns: Function[], arg?: any) => {
+  for (let i = 0; i < fns.length; i++) {
+    fns[i](arg);
+  }
+};
+
 export const hasChanged = (value: any, oldValue: any): boolean =>
   !Object.is(value, oldValue);

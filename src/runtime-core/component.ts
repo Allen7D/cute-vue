@@ -4,6 +4,15 @@ import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 import { initSlots } from "./componentSlots";
 
+// 生命周期钩子
+// https://v3.cn.vuejs.org/guide/composition-api-lifecycle-hooks.html
+export const enum LifecycleHooks {
+  BEFORE_MOUNT = "bm",
+  MOUNTED = "m",
+  BEFORE_UPDATE = "bu",
+  UPDATED = "u",
+}
+
 // 创建组件实例
 export function createComponentInstance(vnode, parent) {
   const component = {
@@ -15,9 +24,14 @@ export function createComponentInstance(vnode, parent) {
     slots: {},
     provides: parent ? parent.provides : {}, // 此处的逻辑，可以一直往上取(parent.parent.provides)
     parent,
-    isMounted: false,
     subTree: {},
     emit: () => {},
+    // lifecycle hooks
+    isMounted: false,
+    bm: null,
+    m: null,
+    bu: null,
+    u: null,
   };
   component.emit = emit.bind(null, component) as any;
 
@@ -70,7 +84,7 @@ function finishComponentSetup(instance) {
 }
 
 // 当前组件的实例（仅在setup中使用）
-let currentInstance = null;
+export let currentInstance = null;
 
 export function getCurrentInstance() {
   return currentInstance;
@@ -78,4 +92,8 @@ export function getCurrentInstance() {
 
 export function setCurrentInstance(instance) {
   currentInstance = instance;
+}
+
+export function unsetCurrentInstance() {
+  currentInstance = null;
 }
