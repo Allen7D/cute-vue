@@ -23,10 +23,28 @@ function parseChildren(context) {
       node = parseElement(context);
     }
   }
+  // 以上两种方式都无法解析，则为文本
+  if (!node) {
+    node = parseText(context);
+  }
 
   nodes.push(node);
 
   return nodes;
+}
+
+function parseText(context) {
+  const content = parseTextData(context, context.source.length);
+  return {
+    type: NodeTypes.TEXT,
+    content,
+  };
+}
+
+function parseTextData(context, length) {
+  const rawText = context.source.slice(0, length);
+  advanceBy(context, length); // 取值之后，直接推进
+  return rawText;
 }
 
 function parseElement(context) {
@@ -38,7 +56,7 @@ function parseElement(context) {
 
 function parseTag(context, type: TagType) {
   // 解析 tag
-  const match: any = /^<\/?([a-z]*)/i.exec(context.source);
+  const match: any = /^<\/?([a-z]*)/i.exec(context.source); // 正则匹配 <开头或者 </ 开头的标签
   const tag = match[1];
   // 推进(删除)已处理的代码
   advanceBy(context, match[0].length);
@@ -62,9 +80,9 @@ function parseInterpolation(context) {
   advanceBy(context, openDelimiter.length); // 推进2位，去掉 {{
 
   const rawContentLength = closeIndex - openDelimiter.length;
-  const rawContent = context.source.slice(0, rawContentLength); // 所要获取的内容
+  const rawContent = parseTextData(context, rawContentLength); // 所要获取的内容
   const content = rawContent.trim(); // 修复表达式前后存在空格的边缘情况
-  advanceBy(context, rawContentLength + closeDelimiter.length); // 继续推进到 }} 之后的位置
+  advanceBy(context, closeDelimiter.length); // 继续推进到 }} 之后的位置
 
   return {
     type: NodeTypes.INTERPOLATION,
