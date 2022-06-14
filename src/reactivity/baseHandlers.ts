@@ -7,9 +7,15 @@ const set = createSetter();
 const readonlyGet = createGetter(true);
 const shallowReadonlyGet = createGetter(true, true);
 
+/**
+ *
+ * @param isReadOnly 是否只读
+ * @param shallow 是否浅层响应式转换
+ * @returns
+ */
 function createGetter(isReadOnly = false, shallow = false) {
   return function get(target, key) {
-    // 取ReactiveFlags默认值时，来判断是否 reactive 或 readonly
+    // 取 ReactiveFlags 默认值时，来判断是否 reactive 或 readonly
     if (key === ReactiveFlags.IS_REACTIVE) {
       return !isReadOnly;
     } else if (key === ReactiveFlags.IS_READONLY) {

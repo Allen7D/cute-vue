@@ -1,7 +1,3 @@
-// it('init', () => {
-//     expect(true).toBe(true);
-// });
-
 function add(a, b) {
   return a + b;
 }

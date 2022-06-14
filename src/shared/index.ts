@@ -1,7 +1,12 @@
 export const EMPTY_OBJ = {};
 
+export const NOOP = () => {};
+
 export const extend = Object.assign;
 
+export const isFunction = (val: unknown): val is Function => {
+  return typeof val === "function";
+};
 export const isObject = (val) => {
   return val !== null && typeof val === "object";
 };

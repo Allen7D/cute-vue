@@ -3,10 +3,10 @@ import { extend } from "../shared";
 let activeEffect;
 let shouldTrack; // 是否可以收集依赖
 
-export class ReactiveEffect {
+export class ReactiveEffect<T = any> {
   private _fn: any;
   public deps = [];
-  private active = true; // 该effect是否可用
+  private active = true; // 该 effect 是否可用
   public onStop?: () => void;
 
   constructor(fn, public scheduler?) {
