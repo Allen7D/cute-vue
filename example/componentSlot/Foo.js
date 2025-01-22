@@ -1,4 +1,4 @@
-import { h, renderSlots } from "../../lib/cute-vue.esm.js";
+import { h, renderSlots } from "../../lib/diy-vue.esm.js";
 
 export const SingleSlot = {
   setup() {

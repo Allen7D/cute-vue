@@ -1,4 +1,4 @@
-import { h } from "../../lib/cute-vue.esm.js";
+import { h } from "../../lib/diy-vue.esm.js";
 
 import ArrayToText from "./ArrayToText.js";
 import TextToText from "./TextToText.js";

@@ -1,4 +1,4 @@
-import { h, getCurrentInstance } from "../../lib/cute-vue.esm.js";
+import { h, getCurrentInstance } from "../../lib/diy-vue.esm.js";
 import { Foo } from "./Foo.js";
 
 export const App = {

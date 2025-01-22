@@ -1,8 +1,8 @@
 {
-  "name": "cute-vue",
+  "name": "diy-vue",
   "version": "1.0.0",
-  "main": "lib/cute-vue.cjs.js",
-  "module": "lib/cute-vue.esm.js",
+  "main": "lib/diy-vue.cjs.js",
+  "module": "lib/diy-vue.esm.js",
   "license": "MIT",
   "scripts": {
     "test": "jest",

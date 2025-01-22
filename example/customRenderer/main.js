@@ -1,4 +1,4 @@
-import { createRenderer } from "../../lib/cute-vue.esm.js";
+import { createRenderer } from "../../lib/diy-vue.esm.js";
 import { App } from "./App.js";
 
 const game = new PIXI.Application({

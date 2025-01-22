@@ -2,7 +2,7 @@
 // 或者
 // 老的是 Text --> 新的是 Array
 
-import { ref, h } from "../../lib/cute-vue.esm.js";
+import { ref, h } from "../../lib/diy-vue.esm.js";
 
 const prevChildren = [h("div", {}, "A"), h("div", {}, "B")]; // 老的是 Array
 const nextChildren = "newChild"; // 新的是 Text

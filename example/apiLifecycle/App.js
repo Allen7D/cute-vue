@@ -5,7 +5,7 @@ import {
   onMounted,
   onBeforeUpdate,
   onUpdated,
-} from "../../lib/cute-vue.esm.js";
+} from "../../lib/diy-vue.esm.js";
 
 export const App = {
   name: "App",

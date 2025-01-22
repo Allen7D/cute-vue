@@ -1,4 +1,4 @@
-import { h, ref } from "../../lib/cute-vue.esm.js";
+import { h, ref } from "../../lib/diy-vue.esm.js";
 export default {
   name: "Child",
   setup(props, { emit }) {},

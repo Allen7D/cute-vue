@@ -1,4 +1,4 @@
-import { h } from "../../lib/cute-vue.esm.js";
+import { h } from "../../lib/diy-vue.esm.js";
 import Foo from "./Foo.js";
 
 export const App = {
@@ -21,7 +21,7 @@ export const App = {
 
   setup() {
     return {
-      msg: "cute-vue",
+      msg: "diy-vue",
     };
   },
 };

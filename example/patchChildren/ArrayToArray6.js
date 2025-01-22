@@ -1,7 +1,7 @@
 // 涉及 Diff 算法
 // 老的是 Array --> 新的是 Array
 
-import { ref, h } from "../../lib/cute-vue.esm.js";
+import { ref, h } from "../../lib/diy-vue.esm.js";
 
 // 6. 某个子节点没有 key 的场景
 //  c 节点应该是 move 而不是删除之后重新创建的

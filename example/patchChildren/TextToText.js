@@ -1,5 +1,5 @@
 // 老的是 Text --> 新的是 Text
-import { ref, h } from "../../lib/cute-vue.esm.js";
+import { ref, h } from "../../lib/diy-vue.esm.js";
 
 const prevChildren = "oldChild";
 const nextChildren = "newChild";

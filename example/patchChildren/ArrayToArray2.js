@@ -1,7 +1,7 @@
 // 涉及 Diff 算法
 // 老的是 Array --> 新的是 Array
 
-import { ref, h } from "../../lib/cute-vue.esm.js";
+import { ref, h } from "../../lib/diy-vue.esm.js";
 
 // 2. 右侧的对比
 // a (b c)

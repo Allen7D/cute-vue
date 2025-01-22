@@ -3,7 +3,7 @@ import {
   ref,
   getCurrentInstance,
   nextTick,
-} from "../../lib/cute-vue.esm.js";
+} from "../../lib/diy-vue.esm.js";
 
 export default {
   name: "App",

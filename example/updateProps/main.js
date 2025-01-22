@@ -1,4 +1,4 @@
-import { createApp } from "../../lib/cute-vue.esm.js";
+import { createApp } from "../../lib/diy-vue.esm.js";
 import { App } from "./App.js";
 
 const rootContainer = document.querySelector("#app");

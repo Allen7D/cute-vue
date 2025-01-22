@@ -1,4 +1,4 @@
-import { h } from "../../lib/cute-vue.esm.js";
+import { h } from "../../lib/diy-vue.esm.js";
 
 export const App = {
   setup() {

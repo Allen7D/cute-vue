@@ -1,4 +1,4 @@
-import { h, createTextVNode } from "../../lib/cute-vue.esm.js";
+import { h, createTextVNode } from "../../lib/diy-vue.esm.js";
 import { SingleSlot, ArraySlot, NameSlot, ScopeSlot } from "./Foo.js";
 
 export const App = {
