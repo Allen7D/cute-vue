@@ -45,3 +45,10 @@
 - 实现 watch 和 watchEffct
 - 实现 生命周期钩子: onBeforeMount、onMounted、onBeforeUpdate、onUpdated
 
+## jest 用法
+[jest 官网](https://jestjs.io/zh-Hans/docs/getting-started)
+```
+yarn test # 测试所有文件
+yarn test ./src/compiler-core/tests/parse.spec.ts # 测试指定文件
+yarn test --watch # 监视有改动的测试
+```
